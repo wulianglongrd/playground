@@ -1,9 +1,10 @@
-##
+## benchmark result
 
+## BenchmarkContact
 ```shell
 $ go version
 go version go1.20.2 darwin/amd64
-$ go test -bench=. -test.benchmem .
+$ go test -run="none" -bench="BenchmarkContact" -test.benchmem .
 goos: darwin
 goarch: amd64
 pkg: github.com/wulianglongrd/playground/string
