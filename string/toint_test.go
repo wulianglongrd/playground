@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-/**
+/*
 ```shell
 $ go version
 go version go1.20.2 darwin/amd64
@@ -25,8 +25,7 @@ BenchmarkConvertToInt/big-Sscan-12              	 1544557	       769.8 ns/op	   
 PASS
 ok  	github.com/wulianglongrd/playground/string	10.256s
 ```
-**/
-
+*/
 func BenchmarkConvertToInt(b *testing.B) {
 	smallNum := "8080"
 	bigNum := strconv.Itoa(math.MaxInt - 100)
