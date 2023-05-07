@@ -1,0 +1,11 @@
+goos: darwin
+goarch: amd64
+pkg: github.com/wulianglongrd/playground/demos
+cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
+BenchmarkMerge-12    	 1244492	       884.3 ns/op	    2688 B/op	       1 allocs/op
+BenchmarkMerge-12    	 1251223	       996.0 ns/op	    2688 B/op	       1 allocs/op
+BenchmarkMerge-12    	 1282267	      1027 ns/op	    2688 B/op	       1 allocs/op
+BenchmarkMerge-12    	 1235022	       940.8 ns/op	    2688 B/op	       1 allocs/op
+BenchmarkMerge-12    	 1350344	       930.2 ns/op	    2688 B/op	       1 allocs/op
+PASS
+ok  	github.com/wulianglongrd/playground/demos	10.985s
