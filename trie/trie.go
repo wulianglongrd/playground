@@ -4,7 +4,7 @@ type trieChild map[string]*Trie
 
 type Trie struct {
 	child trieChild
-	data  string
+	data  *string
 }
 
 func New() *Trie {
@@ -13,7 +13,7 @@ func New() *Trie {
 	}
 }
 
-func (t *Trie) Add(host []string, data string) {
+func (t *Trie) Add(host []string, data *string) {
 	if len(host) == 0 {
 		// note: this is not necessarily a leaf node.
 		t.data = data
@@ -32,6 +32,8 @@ func (t *Trie) Add(host []string, data string) {
 	child.Add(left, data)
 }
 
+// Matches implement `Matches` semantic matching
+// https://github.com/istio/istio/blob/master/pkg/config/host/name.go#L37
 func (t *Trie) Matches(host []string, out []string) []string {
 	// host reach left boundary
 	if len(host) == 0 {
@@ -77,6 +79,8 @@ func (t *Trie) Matches(host []string, out []string) []string {
 	return out
 }
 
+// SubsetOf implement `SubsetOf` semantic matching
+// https://github.com/istio/istio/blob/master/pkg/config/host/name.go#L64
 func (t *Trie) SubsetOf(host []string, out []string) []string {
 	if len(host) == 0 {
 		if len(t.child) == 0 {
@@ -105,8 +109,8 @@ func (t *Trie) SubsetOf(host []string, out []string) []string {
 }
 
 func (t *Trie) getData(out []string) []string {
-	if t.data != "" {
-		out = append(out, t.data)
+	if t.data != nil {
+		out = append(out, *t.data)
 	}
 	if len(t.child) == 0 {
 		return out

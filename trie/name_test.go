@@ -16,10 +16,12 @@ package trie
 
 import (
 	"fmt"
+	"math/rand"
+	"strings"
 	"testing"
 )
 
-// copy from
+// test cases copy from istio source code, updated and covered trie implementation
 // https://github.com/istio/istio/blob/master/pkg/config/host/name_test.go
 
 func TestNameMatches(t *testing.T) {
@@ -88,6 +90,20 @@ func TestNameMatches(t *testing.T) {
 			if tt.out != tt.a.Matches(tt.b) {
 				t.Fatalf("%q.Matches(%q) = %t wanted %t", tt.a, tt.b, !tt.out, tt.out)
 			}
+
+			// test trie implementation
+			trie := New()
+			sa := string(tt.a)
+			trie.Add(toSlice(tt.a), &sa)
+
+			got := make([]string, 0)
+			got = trie.Matches(toSlice(tt.b), got)
+			if tt.out != (len(got) > 0) {
+				t.Fatalf("trie: %q.Matches(%q) = %t wanted %t", tt.a, tt.b, !tt.out, tt.out)
+			}
+			if len(got) > 0 && got[0] != string(tt.a) {
+				t.Fatalf("trie: %q.Matches(%q) = %s wanted %s", tt.a, tt.b, got[0], tt.a)
+			}
 		})
 	}
 }
@@ -155,31 +171,122 @@ func TestNameSubsetOf(t *testing.T) {
 			if tt.out != tt.a.SubsetOf(tt.b) {
 				t.Fatalf("%q.SubsetOf(%q) = %t wanted %t", tt.a, tt.b, !tt.out, tt.out)
 			}
+
+			// test trie implementation
+			trie := New()
+			sa := string(tt.a)
+			trie.Add(toSlice(tt.a), &sa)
+
+			got := make([]string, 0)
+			got = trie.SubsetOf(toSlice(tt.b), got)
+			if tt.out != (len(got) > 0) {
+				t.Fatalf("trie: %q.Matches(%q) = %t wanted %t", tt.a, tt.b, !tt.out, tt.out)
+			}
+			if len(got) > 0 && got[0] != string(tt.a) {
+				t.Fatalf("trie: %q.Matches(%q) = %s wanted %s", tt.a, tt.b, got[0], tt.a)
+			}
 		})
 	}
 }
 
-func BenchmarkNameMatch(b *testing.B) {
-	tests := []struct {
-		a, z    Name
-		matches bool
-	}{
-		{"foo.com", "foo.com", true},
-		{"*.com", "foo.com", true},
-		{"*.foo.com", "bar.foo.com", true},
-		{"*", "foo.com", true},
-		{"*", "*.com", true},
-		{"*", "", true},
-		{"*.com", "*.foo.com", true},
-		{"foo.com", "*.foo.com", false},
-		{"*.foo.bar.baz", "baz", false},
+/*
+❯ go test -run="none" -bench="BenchmarkMatches" -test.benchmem -count=1
+goos: darwin
+goarch: amd64
+pkg: github.com/wulianglongrd/playground/trie
+cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
+BenchmarkMatches/old_matches-12         	  799670	      1267 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMatches/trie_matches-12        	 2562811	       467.8 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMatches/old_subsetOf-12        	  943035	      1294 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMatches/trie_subsetOf-12       	 2725290	       435.2 ns/op	      16 B/op	       1 allocs/op
+PASS
+ok  	github.com/wulianglongrd/playground/trie	5.935s
+*/
+func BenchmarkMatches(b *testing.B) {
+	egressHosts := []string{
+		"v1.productpage.cluster.local.svc",
+		"v1.reviews.cluster.local.svc",
+		"v2.reviews.cluster.local.svc",
+		"v3.reviews.cluster.local.svc",
+		"v1.details.cluster.local.svc",
+		"v1.ratings.cluster.local.svc",
+		"*.wildcard.com",
 	}
-	for n := 0; n < b.N; n++ {
-		for _, test := range tests {
-			doesMatch := test.a.Matches(test.z)
-			if doesMatch != test.matches {
-				b.Fatalf("does not match")
+	vsHosts := make([]string, 0)
+	vsHosts = append(vsHosts, egressHosts...)
+	for i := 0; i < 3; i++ {
+		for _, h := range egressHosts {
+			if strings.HasPrefix(h, "*") {
+				vsHosts = append(vsHosts, fmt.Sprintf("*.%d%s", i, h[1:]))
+				continue
 			}
+			vsHosts = append(vsHosts, fmt.Sprintf("%d.%s", i, h))
 		}
 	}
+	egressHosts = append(egressHosts, "notexists.com", "*.notexists.com")
+
+	// shuffle the slice
+	rand.Shuffle(len(vsHosts), func(i, j int) {
+		vsHosts[i], vsHosts[j] = vsHosts[j], vsHosts[i]
+	})
+	rand.Shuffle(len(egressHosts), func(i, j int) {
+		egressHosts[i], egressHosts[j] = egressHosts[j], egressHosts[i]
+	})
+
+	b.ResetTimer()
+	b.Run("old matches", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			for _, h2 := range egressHosts {
+				for _, h1 := range vsHosts {
+					Name(h1).Matches(Name(h2))
+				}
+			}
+		}
+	})
+
+	b.Run("trie matches", func(b *testing.B) {
+		// build trie
+		tr := New()
+		for _, h1 := range vsHosts {
+			tr.Add(strings.Split(h1, "."), &h1)
+		}
+		for _, h2 := range egressHosts {
+			a2 := strings.Split(h2, ".")
+			out := make([]string, 0)
+			for i := 0; i < b.N; i++ {
+				out = out[:0]
+				tr.Matches(a2, out)
+			}
+		}
+	})
+
+	b.Run("old subsetOf", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			for _, h2 := range egressHosts {
+				for _, h1 := range vsHosts {
+					Name(h1).SubsetOf(Name(h2))
+				}
+			}
+		}
+	})
+
+	b.Run("trie subsetOf", func(b *testing.B) {
+		// build trie
+		tr := New()
+		for _, h1 := range vsHosts {
+			tr.Add(strings.Split(h1, "."), &h1)
+		}
+		for _, h2 := range egressHosts {
+			a2 := strings.Split(h2, ".")
+			out := make([]string, 0)
+			for i := 0; i < b.N; i++ {
+				out = out[:0]
+				tr.SubsetOf(a2, out)
+			}
+		}
+	})
+}
+
+func toSlice(a Name) []string {
+	return strings.Split(string(a), ".")
 }
