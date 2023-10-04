@@ -190,6 +190,8 @@ func TestNameSubsetOf(t *testing.T) {
 }
 
 /*
+Note: the benchmark test results are closely related to the number of "vsHosts" and also related to the "differentiation of egressHosts".
+
 ❯ go test -run="none" -bench="BenchmarkMatches" -test.benchmem -count=1
 goos: darwin
 goarch: amd64
@@ -235,10 +237,10 @@ func BenchmarkMatches(b *testing.B) {
 
 	b.ResetTimer()
 	b.Run("old matches", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			for _, h2 := range egressHosts {
-				for _, h1 := range vsHosts {
-					Name(h1).Matches(Name(h2))
+		for _, eh := range egressHosts {
+			for i := 0; i < b.N; i++ {
+				for _, vh := range vsHosts {
+					Name(vh).Matches(Name(eh))
 				}
 			}
 		}
@@ -247,11 +249,13 @@ func BenchmarkMatches(b *testing.B) {
 	b.Run("trie matches", func(b *testing.B) {
 		// build trie
 		tr := New()
-		for _, h1 := range vsHosts {
-			tr.Add(strings.Split(h1, "."), &h1)
+		for _, vh := range vsHosts {
+			tr.Add(strings.Split(vh, "."), &vh)
 		}
-		for _, h2 := range egressHosts {
-			a2 := strings.Split(h2, ".")
+
+		// test matches
+		for _, eh := range egressHosts {
+			a2 := strings.Split(eh, ".")
 			out := make([]string, 0)
 			for i := 0; i < b.N; i++ {
 				out = out[:0]
@@ -261,10 +265,10 @@ func BenchmarkMatches(b *testing.B) {
 	})
 
 	b.Run("old subsetOf", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			for _, h2 := range egressHosts {
-				for _, h1 := range vsHosts {
-					Name(h1).SubsetOf(Name(h2))
+		for _, eh := range egressHosts {
+			for i := 0; i < b.N; i++ {
+				for _, vh := range vsHosts {
+					Name(vh).SubsetOf(Name(eh))
 				}
 			}
 		}
@@ -273,11 +277,13 @@ func BenchmarkMatches(b *testing.B) {
 	b.Run("trie subsetOf", func(b *testing.B) {
 		// build trie
 		tr := New()
-		for _, h1 := range vsHosts {
-			tr.Add(strings.Split(h1, "."), &h1)
+		for _, vh := range vsHosts {
+			tr.Add(strings.Split(vh, "."), &vh)
 		}
-		for _, h2 := range egressHosts {
-			a2 := strings.Split(h2, ".")
+
+		// test subsetOf matches
+		for _, eh := range egressHosts {
+			a2 := strings.Split(eh, ".")
 			out := make([]string, 0)
 			for i := 0; i < b.N; i++ {
 				out = out[:0]

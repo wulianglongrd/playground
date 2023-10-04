@@ -37,15 +37,16 @@ func (t *Trie) Add(host []string, data *string) {
 func (t *Trie) Matches(host []string, out []string) []string {
 	// host reach left boundary
 	if len(host) == 0 {
-		// the tree has reached a leaf node
-		// trie: a.com
-		// host: a.com
+		// the tree has reached a leaf node.
+		// there means: trie equals host (match),
+		// example1, trie: a.com, host: a.com
+		// example2, trie: *.a.com, host: *.a.com
 		if len(t.child) == 0 {
 			return t.getData(out)
 		}
-		// The tree has not reached a leaf node
-		// trie: a.com
-		// host: xx.a.com
+		// The tree has not reached a leaf node.
+		// there means: trie is longer than host (not match),
+		// example, trie: {anything}.a.com, host: a.com
 		return out
 	}
 
@@ -57,25 +58,27 @@ func (t *Trie) Matches(host []string, out []string) []string {
 		return child.Matches(left, out)
 	}
 
-	// the tree has reached a leaf node
-	// trie: foo.com
-	// host: *.foo.com
+	// the tree has reached a leaf node.
+	// there means: trie is shorter than host (not match),
+	// example, trie: foo.com, host: {anything}.foo.com
 	if len(t.child) == 0 {
 		return out
 	}
 
-	// trie: foo.com
-	// host: *.com
+	// match
+	// example, trie: {anything-but-not-*}.com, host: *.com
 	if key == "*" {
 		return t.getData(out)
 	}
 
-	// trie: *.com
-	// host: foo.com
+	// match
+	// example, trie: *.com, host: {anything-but-not-*}.com
 	if _, ok := t.child["*"]; ok {
 		return t.getData(out)
 	}
 
+	// not match
+	// example, trie: a.com, host: b.com
 	return out
 }
 
