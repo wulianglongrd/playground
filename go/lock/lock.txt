@@ -1,0 +1,26 @@
+goos: darwin
+goarch: amd64
+pkg: github.com/wulianglongrd/playground/go/lock
+cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
+BenchmarkLock/get_one-12         	1000000000	         0.0000013 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLock/get_one-12         	1000000000	         0.0000010 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLock/get_one-12         	1000000000	         0.0000011 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLock/get_one-12         	1000000000	         0.0000009 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLock/get_one-12         	1000000000	         0.0000009 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLock/get_one-12         	1000000000	         0.0000009 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLock/get_one-12         	1000000000	         0.0000007 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLock/get_one-12         	1000000000	         0.0000009 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLock/get_one-12         	1000000000	         0.0000009 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLock/get_one-12         	1000000000	         0.0000007 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLock/get_batch-12       	1000000000	         0.0000020 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLock/get_batch-12       	1000000000	         0.0000018 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLock/get_batch-12       	1000000000	         0.0000013 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLock/get_batch-12       	1000000000	         0.0000021 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLock/get_batch-12       	1000000000	         0.0000019 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLock/get_batch-12       	1000000000	         0.0000020 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLock/get_batch-12       	1000000000	         0.0000012 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLock/get_batch-12       	1000000000	         0.0000030 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLock/get_batch-12       	1000000000	         0.0000020 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLock/get_batch-12       	1000000000	         0.0000023 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	github.com/wulianglongrd/playground/go/lock	1.008s
